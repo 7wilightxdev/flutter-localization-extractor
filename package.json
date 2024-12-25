@@ -1,0 +1,62 @@
+{
+  "name": "flutter-localization-extractor",
+  "displayName": "Flutter Localization Extractor",
+  "description": "A Visual Studio Code extension to extract new localization keys from Flutter projects.",
+  "version": "0.0.1",
+  "publisher": "twilight2dev",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onCommand:extension.extractLocalizationKey"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.extractLocalizationKey",
+        "title": "Extract New Localization Key"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "extension.extractLocalizationKey",
+          "group": "navigation",
+          "when": "editorHasSelection"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.96.0",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
+    "@vscode/test-electron": "^2.3.4",
+    "eslint": "^8.47.0",
+    "glob": "^10.3.3",
+    "mocha": "^10.2.0",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "chokidar": "^4.0.3",
+    "fs-extra": "^11.2.0",
+    "undici": "^7.2.0",
+    "yaml": "^2.6.1"
+  }
+}
