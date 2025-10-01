@@ -30,7 +30,7 @@ export async function loadConfig(): Promise<LocalizationConfig | null> {
 }
 
 
-function parseCommand(commandString: string): { command: string; args: string[] } {
+export function parseCommand(commandString: string): { command: string; args: string[] } {
   const parts = commandString.trim().split(/\s+/);
   const command = parts[0];
   const args = parts.slice(1);
