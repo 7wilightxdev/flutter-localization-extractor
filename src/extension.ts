@@ -5,7 +5,8 @@ import {
   keyFromSelection,
   meaningFromSelection,
   extractPlaceholders,
-  runFlutterGen,
+  runGenCommand,
+  parseCommand,
 } from "./helper";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -84,12 +85,13 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.showInformationMessage(`Localization key '${key}' created successfully.`);
 
     // Run flutter gen-l10n
-    if (config.runFlutterGen) {
-      runFlutterGen();
+    if (config.genCommand) {
+      const { command, args } = parseCommand(config.genCommand);
+      runGenCommand(command, args);
     }
   });
 
   context.subscriptions.push(disposable);
 }
 
-export function deactivate() {}
+export function deactivate() { }
