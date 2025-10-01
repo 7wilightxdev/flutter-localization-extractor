@@ -2,7 +2,7 @@
 
 This Visual Studio Code extension simplifies the process of extracting and managing localization keys for Flutter applications. It allows developers to easily convert text into localized keys and manage ARB files (`app_en.arb`, `app_vi.arb`, etc.) directly from the editor.
 
-## ✨ Features
+## Features
 
 - **Extract Localization Keys:** Quickly create localization keys from selected text.
 - **Automatic ARB File Updates:** Add generated keys and translations directly to your ARB files.
@@ -10,12 +10,12 @@ This Visual Studio Code extension simplifies the process of extracting and manag
 - **Run Generate Command (Optional):** Automatically regenerate localization files after updates.
 - **Customizable Configurations:** Define output files and prefixes via `extract_localization_config.yaml`.
 
-## 🚀 Installation
+## Installation
 
 1. Install the extension from the Visual Studio Code Marketplace.
 2. Add a `extract_localization_config.yaml` file to your project workspace (details in the **Configuration** section).
 
-## ⚙️ Configuration
+## Configuration
 
 Add a `extract_localization_config.yaml` file to the root of your project with the following structure:
 
@@ -33,7 +33,7 @@ genCommand: flutter gen-l10n
 2. `prefix`: The prefix for localization calls (e.g., AppLocalization.of(context)).
 3. `genCommand`: Whether to run gen command automatically.
 
-## 📖 Usage
+## Usage
 
 ### 1. Generate Localization Key
 
@@ -80,6 +80,6 @@ AppLocalization.of(context).helloUsername(username)
 
 If enabled in the `extract_localization_config.yaml`, the extension will automatically execute gen command after updating ARB files. This ensures your localization changes are immediately applied.
 
-## 📜 License
+## License
 
 This extension is licensed under the MIT License
