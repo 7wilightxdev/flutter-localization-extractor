@@ -7,7 +7,7 @@ This Visual Studio Code extension simplifies the process of extracting and manag
 - **Extract Localization Keys:** Quickly create localization keys from selected text.
 - **Automatic ARB File Updates:** Add generated keys and translations directly to your ARB files.
 - **Support for String Interpolation:** Handles placeholders like `$username` or `${username}` automatically.
-- **Run `flutter gen-l10n` (Optional):** Automatically regenerate localization files after updates.
+- **Run Generate Command (Optional):** Automatically regenerate localization files after updates.
 - **Customizable Configurations:** Define output files and prefixes via `extract_localization_config.yaml`.
 
 ## 🚀 Installation
@@ -20,18 +20,18 @@ This Visual Studio Code extension simplifies the process of extracting and manag
 Add a `extract_localization_config.yaml` file to the root of your project with the following structure:
 
 ```yaml
-output_files:
+outputFiles:
   - lib/i10n/app_en.arb
   - lib/i10n/app_vi.arb
 prefix: AppLocalization.of(context)
-run_flutter_gen: true
+genCommand: flutter gen-l10n
 ```
 
 ### Configuration Fields
 
-1. `output_files`: A list of paths to your ARB files.
+1. `outputFiles`: A list of paths to your ARB files.
 2. `prefix`: The prefix for localization calls (e.g., AppLocalization.of(context)).
-3. `run_flutter_gen`: Whether to run flutter gen-l10n automatically (true or false).
+3. `genCommand`: Whether to run gen command automatically.
 
 ## 📖 Usage
 
@@ -76,9 +76,9 @@ After generating the key, the selected text will be replaced with a localization
 AppLocalization.of(context).helloUsername(username)
 ```
 
-### 4. Automatically Run flutter gen-l10n
+### 4. Automatically Run Gen Command
 
-If enabled in the `extract_localization_config.yaml`, the extension will automatically execute `flutter gen-l10n` after updating ARB files. This ensures your localization changes are immediately applied.
+If enabled in the `extract_localization_config.yaml`, the extension will automatically execute gen command after updating ARB files. This ensures your localization changes are immediately applied.
 
 ## 📜 License
 

@@ -2,7 +2,7 @@
   "name": "flutter-localization-extractor",
   "displayName": "Flutter Localization Extractor",
   "description": "A Visual Studio Code extension to extract new localization keys from Flutter projects.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "twilight2dev",
   "engines": {
     "vscode": "^1.96.0"

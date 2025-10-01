@@ -69,31 +69,65 @@ export async function updateLocalizationFiles(
   for (const filePath of outputFiles) {
     const fullPath = path.resolve(path.join(workspacePath, filePath));
 
-    // Đọc file dưới dạng text để không tự sắp xếp keys
-    const fileText = await fs.readFile(fullPath, 'utf-8');
-    const fileContent = JSON.parse(fileText);
+    // Đọc file dưới dạng text, 
+    // Dùng cách này để không thay đổi content cũ, không remove duplicate keys
+    let fileText = await fs.readFile(fullPath, 'utf-8');
 
-    // Thêm key mới
-    fileContent[key] = text;
+    // Tìm vị trí của dấu } cuối cùng
+    const lastBraceIndex = fileText.lastIndexOf('}');
 
-    // Thêm metadata cho placeholders
-    if (Object.keys(placeholders).length > 0) {
-      fileContent[`@${key}`] = {
-        placeholders: Object.fromEntries(
-          Object.entries(placeholders).map(([name, type]) => [name, { type }])
-        ),
-      };
+    if (lastBraceIndex === -1) {
+      console.error('Invalid JSON file format');
+      continue;
     }
 
-    // Chuyển đổi thành JSON string với format đẹp
-    const jsonString = JSON.stringify(fileContent, null, 2);
+    // Tìm vị trí của dấu phẩy hoặc newline trước dấu } cuối
+    let insertPosition = lastBraceIndex;
+    let beforeBrace = fileText.substring(0, lastBraceIndex).trimEnd();
+
+    // Kiểm tra xem có cần thêm dấu phẩy không
+    const needsComma = beforeBrace.length > 0 &&
+      beforeBrace[beforeBrace.length - 1] !== ',' &&
+      beforeBrace[beforeBrace.length - 1] !== '{';
+
+    // Lấy indent từ file (thường là 2 spaces)
+    const indentMatch = fileText.match(/\n( +)"/);
+    const indent = indentMatch ? indentMatch[1] : '  ';
+
+    // Tạo nội dung mới cần thêm
+    let newContent = '';
+
+    if (needsComma) {
+      newContent += ',';
+    }
+
+    newContent += `\n${indent}"${key}": "${text}"`;
+
+    // Thêm metadata cho placeholders nếu có
+    if (Object.keys(placeholders).length > 0) {
+      const placeholdersObj = Object.fromEntries(
+        Object.entries(placeholders).map(([name, type]) => [name, { type }])
+      );
+      const placeholdersStr = JSON.stringify(placeholdersObj, null, indent.length)
+        .split('\n')
+        .map((line, i) => i === 0 ? line : indent + line)
+        .join('\n');
+
+      newContent += `,\n${indent}"@${key}": ${placeholdersStr}`;
+    }
+
+    // Chèn nội dung mới vào trước dấu }
+    const updatedText = fileText.substring(0, insertPosition) +
+      newContent +
+      '\n' +
+      fileText.substring(insertPosition);
 
     // Ghi lại file
-    await fs.writeFile(fullPath, jsonString + '\n', 'utf-8');
+    await fs.writeFile(fullPath, updatedText, 'utf-8');
   }
 }
 
-export function runGenCommand(command: string = "flutter", args: string[] = ["gen-l10n"]) {
+export function runGenCommand(commandString: string) {
   const workspaceFolders = vscode.workspace.workspaceFolders;
 
   if (!workspaceFolders || workspaceFolders.length === 0) {
@@ -102,27 +136,33 @@ export function runGenCommand(command: string = "flutter", args: string[] = ["ge
   }
 
   const workspacePath = workspaceFolders[0].uri.fsPath;
-
+  const { command, args } = parseCommand(commandString);
   const process = cp.spawn(command, args, {
     cwd: workspacePath,
     shell: true,
   });
 
+  process.stdout.on("data", (data) => {
+    vscode.window.showErrorMessage(
+      `Command "${command} ${args}" completed successfully.`
+    );
+  });
+
   process.on("close", (code) => {
     if (code !== 0) {
       vscode.window.showErrorMessage(
-        `Command "${command} ${args.join(' ')}" failed with exit code ${code}.`
+        `Command "${command} ${args}" failed with exit code ${code}.`
       );
     } else {
       vscode.window.showInformationMessage(
-        `Command "${command} ${args.join(' ')}" completed successfully.`
+        `Command "${command} ${args}" completed successfully.`
       );
     }
   });
 
   process.on("error", (err) => {
     vscode.window.showErrorMessage(
-      `Failed to run "${command} ${args.join(' ')}": ${err.message}`
+      `Failed to run "${command} ${args}": ${err.message}`
     );
   });
 }
