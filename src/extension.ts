@@ -86,8 +86,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Run flutter gen-l10n
     if (config.genCommand) {
-      const { command, args } = parseCommand(config.genCommand);
-      runGenCommand(command, args);
+      runGenCommand(config.genCommand);
     }
   });
 
