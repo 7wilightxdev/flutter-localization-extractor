@@ -7,7 +7,7 @@ import * as cp from "child_process";
 interface LocalizationConfig {
   outputFiles: string[];
   prefix: string;
-  runFlutterGen: boolean;
+  genCommand: string;
 }
 
 export async function loadConfig(): Promise<LocalizationConfig | null> {
@@ -29,18 +29,26 @@ export async function loadConfig(): Promise<LocalizationConfig | null> {
   }
 }
 
+
+function parseCommand(commandString: string): { command: string; args: string[] } {
+  const parts = commandString.trim().split(/\s+/);
+  const command = parts[0];
+  const args = parts.slice(1);
+  return { command, args };
+}
+
 export function keyFromSelection(text: string): string {
   return text
-  .replace(/[$\{\}]/g, "") // Loại bỏ các ký tự ($, {, }) trong chuỗi.
-  .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase()) // Chuyển các ký tự không phải chữ cái hoặc số thành chữ cái in hoa.
-  .replace(/^./, (str) => str.toLowerCase()); // Chuyển ký tự đầu tiên thành chữ cái thường.
+    .replace(/[$\{\}]/g, "") // Loại bỏ các ký tự ($, {, }) trong chuỗi.
+    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase()) // Chuyển các ký tự không phải chữ cái hoặc số thành chữ cái in hoa.
+    .replace(/^./, (str) => str.toLowerCase()); // Chuyển ký tự đầu tiên thành chữ cái thường.
 }
 
 export function meaningFromSelection(text: string): string {
   return text
-      .replace(/\$\{(\w+)\}/g, "{$1}")
-      .replace(/\$(\w+)/g, "{$1}")
-      .replace(/\$/g, "");
+    .replace(/\$\{(\w+)\}/g, "{$1}")
+    .replace(/\$(\w+)/g, "{$1}")
+    .replace(/\$/g, "");
 }
 
 export function extractPlaceholders(text: string): string[] {
@@ -57,42 +65,64 @@ export async function updateLocalizationFiles(
   const workspaceFolders = vscode.workspace.workspaceFolders;
   const workspacePath = workspaceFolders!![0].uri.fsPath;
   const outputFiles = config.outputFiles;
+
   for (const filePath of outputFiles) {
     const fullPath = path.resolve(path.join(workspacePath, filePath));
-    const fileContent = await fs.readJSON(fullPath);
 
-    // Add key: text to the .arb file
-    // (e.g., "helloWorld": "Hello, World!")
+    // Đọc file dưới dạng text để không tự sắp xếp keys
+    const fileText = await fs.readFile(fullPath, 'utf-8');
+    const fileContent = JSON.parse(fileText);
+
+    // Thêm key mới
     fileContent[key] = text;
 
-    // Add metadata for placeholders
-    // (e.g., "@helloWorld": { "placeholders": { "name": { "type": "String" } } })
+    // Thêm metadata cho placeholders
     if (Object.keys(placeholders).length > 0) {
       fileContent[`@${key}`] = {
-        placeholders: Object.fromEntries(Object.entries(placeholders).map(([name, type]) => [name, { type }])),
+        placeholders: Object.fromEntries(
+          Object.entries(placeholders).map(([name, type]) => [name, { type }])
+        ),
       };
     }
 
-    await fs.writeJSON(fullPath, fileContent, { spaces: 2 });
+    // Chuyển đổi thành JSON string với format đẹp
+    const jsonString = JSON.stringify(fileContent, null, 2);
+
+    // Ghi lại file
+    await fs.writeFile(fullPath, jsonString + '\n', 'utf-8');
   }
 }
 
-export function runFlutterGen() {
+export function runGenCommand(command: string = "flutter", args: string[] = ["gen-l10n"]) {
   const workspaceFolders = vscode.workspace.workspaceFolders;
-  const workspacePath = workspaceFolders!![0].uri.fsPath;
 
-  const process = cp.spawn("flutter", ["gen-l10n"], {
+  if (!workspaceFolders || workspaceFolders.length === 0) {
+    vscode.window.showErrorMessage("No workspace folder found.");
+    return;
+  }
+
+  const workspacePath = workspaceFolders[0].uri.fsPath;
+
+  const process = cp.spawn(command, args, {
     cwd: workspacePath,
     shell: true,
   });
 
   process.on("close", (code) => {
     if (code !== 0) {
-      vscode.window.showErrorMessage(`flutter gen-l10n failed with exit code ${code}.`);
+      vscode.window.showErrorMessage(
+        `Command "${command} ${args.join(' ')}" failed with exit code ${code}.`
+      );
+    } else {
+      vscode.window.showInformationMessage(
+        `Command "${command} ${args.join(' ')}" completed successfully.`
+      );
     }
   });
 
   process.on("error", (err) => {
-    vscode.window.showErrorMessage(`Failed to run flutter gen-l10n: ${err.message}`);
+    vscode.window.showErrorMessage(
+      `Failed to run "${command} ${args.join(' ')}": ${err.message}`
+    );
   });
 }
