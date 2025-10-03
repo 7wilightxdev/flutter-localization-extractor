@@ -52,8 +52,13 @@ export function meaningFromSelection(text: string): string {
 }
 
 export function extractPlaceholders(text: string): string[] {
-  const matches = [...text.matchAll(/\$\{(\w+)\}|\$(\w+)/g)];
-  return matches.map((match) => match[1] || match[2]);
+  const matches = [...text.matchAll(/\$\{([\w.]+)\}|\$([\w.]+)/g)];
+  return matches.map((match) => {
+    const placeholder = match[1] || match[2];
+    // Extract only the last word after the dot (e.g., controller.text -> text)
+    const lastWord = placeholder.split('.').pop();
+    return lastWord || placeholder;
+  });
 }
 
 export async function updateLocalizationFiles(
