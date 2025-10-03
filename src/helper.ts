@@ -108,12 +108,13 @@ export async function updateLocalizationFiles(
       const placeholdersObj = Object.fromEntries(
         Object.entries(placeholders).map(([name, type]) => [name, { type }])
       );
-      const placeholdersStr = JSON.stringify(placeholdersObj, null, indent.length)
+      const metadataObj = { placeholders: placeholdersObj };
+      const metadataStr = JSON.stringify(metadataObj, null, indent.length)
         .split('\n')
         .map((line, i) => i === 0 ? line : indent + line)
         .join('\n');
 
-      newContent += `,\n${indent}"@${key}": ${placeholdersStr}`;
+      newContent += `,\n${indent}"@${key}": ${metadataStr}`;
     }
 
     // Chèn nội dung mới vào trước dấu }
