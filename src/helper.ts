@@ -143,12 +143,6 @@ export function runGenCommand(commandString: string) {
     shell: true,
   });
 
-  process.stdout.on("data", (data) => {
-    vscode.window.showErrorMessage(
-      `Command "${command} ${args}" completed successfully.`
-    );
-  });
-
   process.on("close", (code) => {
     if (code !== 0) {
       vscode.window.showErrorMessage(
